@@ -1,4 +1,6 @@
 const { app, BrowserWindow } = require('electron');
+// const url = require('url');
+// const path = require('path');
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -30,4 +32,23 @@ app.on('activate', () => {
     createWindow();
   }
 });
+
+// function createMainWindow() {
+//   const mainWindow = new BrowserWindow({
+//     title: 'electron',
+//     width: 1000,
+//     height: 600
+//   });
+
+//   const startUrl = url.format({
+//     pathname: path.join(__dirname, 'index.html'),
+//     protocol: file
+//   });
+
+//   console.log("aa", startUrl)
+
+//   mainWindow.loadURL(startUrl);
+// }
+
+// app.whenReady().then(createMainWindow);
 
