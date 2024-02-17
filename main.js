@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const url = require('url');
-// const path = require('path');
+const path = require('path');
+// const { ipcMain } = require('electron/main');
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -8,9 +9,10 @@ function createWindow() {
     height: 600,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false,
-      sandbox: false,
-      contentSecurityPolicy: "default-src 'self'; script-src 'self';",
+      enableRemoteModule: true,
+      // contextIsolation: false,
+      // sandbox: false,
+      // contentSecurityPolicy: "default-src 'self'; script-src 'self';",
     },
   });
 
@@ -30,13 +32,16 @@ function createWindow() {
   // const yogieDir = `file://${__dirname}/build/index.html`;
   // console.log(yogieDir)
 
-  // const startUrl = url.format({
-  //   pathname: path.join(__dirname, 'index.html'),
-  //   protocol: file
-  // });
-  // console.log(startUrl)
-
+  
   win.webContents.openDevTools();
+  
+  const startUrl = url.format({
+    // pathname: path.join(__dirname, 'index.html'),
+    // pathname: path.join(__dirname, './app/build/index.html'),
+    pathname: path.join(__dirname, '../test-dss-reactjs/dist/index.html'),
+    protocol: 'file'
+  });
+  console.log(startUrl)
 
   // console.log("aaa");
 
@@ -45,7 +50,8 @@ function createWindow() {
 
   // win.loadFile(dirReact);
   // win.loadURL('http://localhost:5173/halo');
-  win.loadURL('http://localhost:5173');
+  // win.loadURL('http://localhost:5173');
+  win.loadURL(startUrl);
 
   // Open DevTools if in development mode
   if (process.env.NODE_ENV === 'development') {
@@ -53,8 +59,8 @@ function createWindow() {
   }
 }
 
-// app.whenReady().then(createWindow);
-app.on('ready', createWindow)
+app.whenReady().then(createWindow);
+// app.on('ready', createWindow)
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -78,23 +84,4 @@ ipcMain.on('login', (event, { username, password }) => {
   //   event.reply('login-failure');
   // }
 });
-
-// function createMainWindow() {
-//   const mainWindow = new BrowserWindow({
-//     title: 'electron',
-//     width: 1000,
-//     height: 600
-//   });
-
-//   const startUrl = url.format({
-//     pathname: path.join(__dirname, 'index.html'),
-//     protocol: file
-//   });
-
-//   console.log("aa", startUrl)
-
-//   mainWindow.loadURL(startUrl);
-// }
-
-// app.whenReady().then(createMainWindow);
 
