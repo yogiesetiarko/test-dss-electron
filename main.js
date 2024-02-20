@@ -28,23 +28,6 @@ function createWindow() {
       // contentSecurityPolicy: "default-src 'self'; script-src 'self';",
     },
   });
-
-  // const startUrl = url.format({
-  //   pathname: path.join(__dirname, 'index.html'),
-  //   protocol: file
-  // });
-
-  // console.log(path.join(__dirname, 'index.html'))
-  // const parentDir = path.resolve(__dirname, '..');
-  // const dirReact = path.join(parentDir, 'test-dss-reactjs/dist/index.html');
-  // const newDir = path.resolve(dirReact);
-  // console.log(parentDir)
-  // console.log(dirReact)
-
-  // const yogieDir = path.resolve(__dirname, 'build/index.html');
-  // const yogieDir = `file://${__dirname}/build/index.html`;
-  // console.log(yogieDir)
-
   
   win.webContents.openDevTools();
   
@@ -54,28 +37,15 @@ function createWindow() {
     // pathname: path.join(__dirname, '../test-dss-reactjs/dist/index.html'),
     protocol: 'file'
   });
-  // console.log(startUrl)
 
-  // console.log("aaa");
-
-  // win.loadFile(yogieDir);
-  // win.loadURL(`file://${__dirname}/build/index.html`);
-
-  // win.loadFile(dirReact);
-  // win.loadURL('http://localhost:5173/halo');
-  // win.loadURL('http://localhost:5173');
   win.loadURL(startUrl);
-
-  // CANNOT !!!!
-  // win.loadFile(startUrl);
 
   // Open DevTools if in development mode
   if (process.env.NODE_ENV === 'development') {
     // win.webContents.openDevTools();
     win.webContents.openDevTools({ mode: 'detach' });
   }
-  // win.webContents.send( 'login:success', data );
-  // return win;
+
 }
 
 app.whenReady().then(() => {
@@ -85,15 +55,6 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
-
-// app.whenReady().then(createWindow);
-// app.on('ready', createWindow)
-// app.on('ready', () => {
-//   window = createWindow();
-  
-//   // Send a message to the window.
-//   window.webContents.send('message:update', 'Doing work...');
-// });
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -112,18 +73,55 @@ app.on('activate', function () {
   }
 });
 
+ipcMain.handle('', async (event, data) => {
+
+});
+
 ipcMain.handle( 'login', async ( event, data ) => {
-  // console.log( "elec", data )
   let payload = {'username': data.username,'password': data.password}
   let options = {'headers': { 'Content-Type': 'application/json'}}
-  // const response = await LoginService.handleLogin(payload, options);
   let response = await LoginService.handleLogin(payload, options).then((result) => { return result; }).catch((error) => {return error});
-  // console.log(response)
   return response
-  // console.log(win)
-  // send: (channel, data) => ipcRenderer.send(channel, data),
-  // ipcMain.send('login:success', {data: 'awa'})
-  // win.webContents.send('login:success', {data: response} );
+});
+
+ipcMain.handle('get:products', async (event, data) => {
+  console.log("get:products main.js")
+  return {
+    success: true,
+    message: 'success',
+    data: [
+      {
+        title: "Sepatu",
+        price: 55000,
+        stock: 25
+      },
+      {
+        title: "Baju",
+        price: 45000,
+        stock: 244
+      },
+      {
+        title: "Topi",
+        price: 25000,
+        stock: 2578
+      },
+    ]
+  }
+});
+
+ipcMain.on('login:failed', async (event, data) => {
+  // Open a simple message box
+  // dialog.showMessageBox({
+  //   type: 'info',
+  //   title: 'Information',
+  //   message: 'This is an information message.',
+  //   buttons: ['OK']
+  // }).then((response) => {
+  //   console.log('User clicked OK');
+  // }).catch((err) => {
+  //   console.error(err);
+  // });  
+  dialog.showErrorBox("Login Failed", data.message)
 });
 
 // window.webContents.send('login:success', data );

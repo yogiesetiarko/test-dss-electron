@@ -6,7 +6,8 @@ const ipc = {
   'render': {
     // From render to main.
     'send': [
-      'openDetailsWindow'
+      'openDetailsWindow',
+      'login:failed'
     ],
     // From main to render.
     'receive': [
@@ -14,7 +15,8 @@ const ipc = {
     ],
     // From render to main and back again.
     'sendReceive': [
-      'login'
+      'login',
+      'get:products'
     ],
   }
 };
