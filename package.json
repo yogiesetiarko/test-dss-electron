@@ -6,12 +6,17 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
-    "live": "npx electronmon ."
+    "live": "npx electronmon .",
+    "electron:build": "electron-builder"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "devDependencies": {
+    "electron": "^28.2.3",
+    "electron-builder": "^24.9.1"
+  },
   "dependencies": {
-    "electron": "^28.2.3"
+    "axios": "^1.6.7"
   }
 }
