@@ -13,6 +13,7 @@ mongodb-realm
 default.realm.management
 default.realm
 default.realm.lock
+default.realm.note
 release
 dist
 build
