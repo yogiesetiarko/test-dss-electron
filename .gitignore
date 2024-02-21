@@ -9,6 +9,10 @@ lerna-debug.log*
 
 node_modules
 app
+mongodb-realm
+default.realm.management
+default.realm
+default.realm.lock
 release
 dist
 build
