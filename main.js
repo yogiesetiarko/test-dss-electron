@@ -4,7 +4,7 @@ const url = require('url');
 const path = require('path');
 const axios = require('axios');
 const LoginService = require('./services/LoginService');
-// const { ipcMain } = require('electron/main');
+const InitDb = require('./services/InitDb')
 
 let win;
 
@@ -46,244 +46,244 @@ function createWindow() {
     win.webContents.openDevTools({ mode: 'detach' });
   }
 
-  initRealm();
-
+  // initRealm();
+  InitDb.initRealm();
 }
 
-async function initRealm() {
-  const realmApp = new Realm.App({ id: 'thehello-mghcp' }); // create a new instance of the Realm.App
+// async function initRealm() {
+//   const realmApp = new Realm.App({ id: 'thehello-mghcp' }); // create a new instance of the Realm.App
 
-  const credentials = Realm.Credentials.anonymous();
-  try {
-    const user = await realmApp.logIn(credentials);
-    // console.log("user", user)
-    // const DogSchema = {
-    //   name: "Dog",
-    //   primaryKey: "_id",
-    //   properties: {
-    //     _id: { type: "objectId", default: () => new Realm.BSON.ObjectId() },
-    //     name: "string",
-    //     age: "int",
-    //   },
-    // }; 
+//   const credentials = Realm.Credentials.anonymous();
+//   try {
+//     const user = await realmApp.logIn(credentials);
+//     // console.log("user", user)
+//     // const DogSchema = {
+//     //   name: "Dog",
+//     //   primaryKey: "_id",
+//     //   properties: {
+//     //     _id: { type: "objectId", default: () => new Realm.BSON.ObjectId() },
+//     //     name: "string",
+//     //     age: "int",
+//     //   },
+//     // }; 
   
-    class Task extends Realm.Object {
-      static schema = {
+//     class Task extends Realm.Object {
+//       static schema = {
 
-        // name: 'Dog',
-        // properties: {
-        //   _id: 'objectId',
-        //   age: 'int?',
-        //   name: 'string?',
-        // },
-        // primaryKey: '_id',
+//         // name: 'Dog',
+//         // properties: {
+//         //   _id: 'objectId',
+//         //   age: 'int?',
+//         //   name: 'string?',
+//         // },
+//         // primaryKey: '_id',
 
-        // name: "Dog",
-        // primaryKey: "_id",
-        // properties: {
-        //   _id: { type: "objectId", default: () => new Realm.BSON.ObjectId() },
-        //   name: "string",
-        //   age: "int",
-        // },
+//         // name: "Dog",
+//         // primaryKey: "_id",
+//         // properties: {
+//         //   _id: { type: "objectId", default: () => new Realm.BSON.ObjectId() },
+//         //   name: "string",
+//         //   age: "int",
+//         // },
 
-        // name: "Dog",
-        // primaryKey: '_id',
-        // properties: {
-        //     _id: { type: "objectId", default: () => new Realm.BSON.ObjectId() },
-        //     name: "string",
-        //     age: "int",
-        //     breed: "string?"
-        // },
+//         // name: "Dog",
+//         // primaryKey: '_id',
+//         // properties: {
+//         //     _id: { type: "objectId", default: () => new Realm.BSON.ObjectId() },
+//         //     name: "string",
+//         //     age: "int",
+//         //     breed: "string?"
+//         // },
 
-        name: "Task",
-        properties: {
-          _id: "int",
-          name: "string",
-          status: "string?",
-          owner_id: "string?",
-        },
-        primaryKey: "_id",        
+//         name: "Task",
+//         properties: {
+//           _id: "int",
+//           name: "string",
+//           status: "string?",
+//           owner_id: "string?",
+//         },
+//         primaryKey: "_id",        
 
-      };
-    }
+//       };
+//     }
 
-    // Flexible Sync uses subscriptions and permissions to determine what data to sync with your App. 
-    // You must have at least one subscription before 
-    // you can read from or write to a realm with Flexible Sync enabled.
-    const config = {
-      schema: [Task],
-      sync: {
-        user: user,
-        flexible: true,
-        initialSubscriptions: {
-          update: (subs, realm) => {
-            subs.add(
-              realm
-                // Use the mapped name in Flexible Sync subscriptions.
-                .objects(`Task`)
-                // .filtered('name == "Dedo"')
-            );
-          },
-        },
-      },      
-    }
+//     // Flexible Sync uses subscriptions and permissions to determine what data to sync with your App. 
+//     // You must have at least one subscription before 
+//     // you can read from or write to a realm with Flexible Sync enabled.
+//     const config = {
+//       schema: [Task],
+//       sync: {
+//         user: user,
+//         flexible: true,
+//         initialSubscriptions: {
+//           update: (subs, realm) => {
+//             subs.add(
+//               realm
+//                 // Use the mapped name in Flexible Sync subscriptions.
+//                 .objects(`Task`)
+//                 // .filtered('name == "Dedo"')
+//             );
+//           },
+//         },
+//       },      
+//     }
 
-    // open a synced realm
-    // const realm = await Realm.open(config);    
-    // console.log("realm", realm)
-
-
-    // NEW
-    const realm = await Realm.open(config);
-    // console.log("realm", realm)
-
-    const realmFileLocation = realm.path;
-    console.log(`Realm file is located at: ${realm.path}`);
-
-    const tasks = realm.objects(Task);
-    console.log("tasks", tasks)
-
-    // // ====== add
-    // // await realm.subscriptions.update((subs) => {
-    // //   const tasks = realm
-    // //     .objects('Task');
-    // //   console.log("tasks inside subs", tasks)
-    // //   subs.add(tasks);
-    // // });
-
-    // realm.write(() => {
-    //   realm.create(Task, {
-    //     _id: 4,
-    //     name: "Kino Shops",
-    //     status: "Open",
-    //   });
-    // });
-    // // console.log("res", res)
-
-    // // ===========
-
-    // // ====== edit no need subs first
-    // // await realm.subscriptions.update((subs) => {
-    // //   const tasks = realm
-    // //     .objects('Task')
-    // //     .filtered('name == "go grocery shopping"');
-    // //   console.log("tasks inside subs", tasks)
-    // //   subs.add(tasks);      
-
-    // //   // // update dog's age
-    // //   // realm.write(() => {
-    // //   //   tasks.status = 'closed';
-    // //   // });
-
-    // // });
-    // // console.log("edit tasks", tasks)
-
-    // // update dog's age
-    // realm.write(() => {
-    //   const task = realm.objects(Task)[0];
-    //   console.log("task inside edit write", task)
-    //   task.status = 'Ahooy';
-    // });
-
-    // // ===========
-
-    // // // delete =============
-    // // const task = realm.objects("Task").filtered("_id == 2");
-    // // console.log("task", task)
-    // realm.write(() => {
-    //   // Find dogs younger than 2 years old.
-    //   let task = realm.objects("Task").filtered("_id == 2");
-    //   console.log("task", task)
-    //   // Delete the collection from the realm.
-    //   realm.delete(task);
-    //   // Discard the reference.
-    //   task = null;
-    // });    
-    // // ====================
-
-    // // READ ================
-    // const myTask = realm.objectForPrimaryKey("Task", 3);
-    // console.log("myTask", myTask)
-    // // =====================
-
-    // const task1 = tasks.find((task) => task._id == 1);
-    // console.log("task1", task1)
-
-    // realm.close();
-
-    // const subs = realm.subscriptions;
-    // subs.update((mutableSubs) => {
-    //     sub = mutableSubs.add(realm.objects("Dog").filtered("age > 5"));
-    // });
-    // await realm.subscriptions.waitForSynchronization();
-
-    // Realm Writes are transactional and Sync automatically
-    // let res = realm.write(() => {
-    //     realm.create(DogSchema, {
-    //         name: "Princess Gracie",
-    //         age: 6,
-    //         breed: "aaa"
-    //     });
-    // });
-    // console.log("res", res)
-
-    // // Data Synced onto a device can be queried locally
-    // const allDogs = realm.objects("Dog");
-    // const olderDogs = alLDogs.filtered("age < 5");
-
-    // =======
+//     // open a synced realm
+//     // const realm = await Realm.open(config);    
+//     // console.log("realm", realm)
 
 
-    // console.log(realm.create({name: "Clifford", age: 12}))
+//     // NEW
+//     const realm = await Realm.open(config);
+//     // console.log("realm", realm)
 
-    // const dog = realm.write(() => {
-    //   // Use the mapped name when performing CRUD operations.
-    //   return realm.create(`Dog`, {
-    //     _id: new Realm.BSON.ObjectId(),
-    //     name: "Sandro", 
-    //     age: 12
-    //   });
-    // });
+//     const realmFileLocation = realm.path;
+//     console.log(`Realm file is located at: ${realm.path}`);
 
-    // // console.log("dog", dog);
+//     const tasks = realm.objects(Task);
+//     console.log("tasks", tasks)
 
-    // const assignedDog = realm.objects(`Dog`);
-    // console.log(`${assignedDog}`);
+//     // // ====== add
+//     // // await realm.subscriptions.update((subs) => {
+//     // //   const tasks = realm
+//     // //     .objects('Task');
+//     // //   console.log("tasks inside subs", tasks)
+//     // //   subs.add(tasks);
+//     // // });
 
-    // // create new dog
-    // const dog = realm.write(() => {
-    //   // console.log(realm.create(DogSchema, {name: "Clifford", age: 12}))
-    //   return realm.create(DogSchema, {name: "Sandro", age: 12});
-    //   // return realm.create("Dog", {name: "Clifford", age: 12});
-    // });     
+//     // realm.write(() => {
+//     //   realm.create(Task, {
+//     //     _id: 4,
+//     //     name: "Kino Shops",
+//     //     status: "Open",
+//     //   });
+//     // });
+//     // // console.log("res", res)
+
+//     // // ===========
+
+//     // // ====== edit no need subs first
+//     // // await realm.subscriptions.update((subs) => {
+//     // //   const tasks = realm
+//     // //     .objects('Task')
+//     // //     .filtered('name == "go grocery shopping"');
+//     // //   console.log("tasks inside subs", tasks)
+//     // //   subs.add(tasks);      
+
+//     // //   // // update dog's age
+//     // //   // realm.write(() => {
+//     // //   //   tasks.status = 'closed';
+//     // //   // });
+
+//     // // });
+//     // // console.log("edit tasks", tasks)
+
+//     // // update dog's age
+//     // realm.write(() => {
+//     //   const task = realm.objects(Task)[0];
+//     //   console.log("task inside edit write", task)
+//     //   task.status = 'Ahooy';
+//     // });
+
+//     // // ===========
+
+//     // // // delete =============
+//     // // const task = realm.objects("Task").filtered("_id == 2");
+//     // // console.log("task", task)
+//     // realm.write(() => {
+//     //   // Find dogs younger than 2 years old.
+//     //   let task = realm.objects("Task").filtered("_id == 2");
+//     //   console.log("task", task)
+//     //   // Delete the collection from the realm.
+//     //   realm.delete(task);
+//     //   // Discard the reference.
+//     //   task = null;
+//     // });    
+//     // // ====================
+
+//     // // READ ================
+//     // const myTask = realm.objectForPrimaryKey("Task", 3);
+//     // console.log("myTask", myTask)
+//     // // =====================
+
+//     // const task1 = tasks.find((task) => task._id == 1);
+//     // console.log("task1", task1)
+
+//     // realm.close();
+
+//     // const subs = realm.subscriptions;
+//     // subs.update((mutableSubs) => {
+//     //     sub = mutableSubs.add(realm.objects("Dog").filtered("age > 5"));
+//     // });
+//     // await realm.subscriptions.waitForSynchronization();
+
+//     // Realm Writes are transactional and Sync automatically
+//     // let res = realm.write(() => {
+//     //     realm.create(DogSchema, {
+//     //         name: "Princess Gracie",
+//     //         age: 6,
+//     //         breed: "aaa"
+//     //     });
+//     // });
+//     // console.log("res", res)
+
+//     // // Data Synced onto a device can be queried locally
+//     // const allDogs = realm.objects("Dog");
+//     // const olderDogs = alLDogs.filtered("age < 5");
+
+//     // =======
+
+
+//     // console.log(realm.create({name: "Clifford", age: 12}))
+
+//     // const dog = realm.write(() => {
+//     //   // Use the mapped name when performing CRUD operations.
+//     //   return realm.create(`Dog`, {
+//     //     _id: new Realm.BSON.ObjectId(),
+//     //     name: "Sandro", 
+//     //     age: 12
+//     //   });
+//     // });
+
+//     // // console.log("dog", dog);
+
+//     // const assignedDog = realm.objects(`Dog`);
+//     // console.log(`${assignedDog}`);
+
+//     // // create new dog
+//     // const dog = realm.write(() => {
+//     //   // console.log(realm.create(DogSchema, {name: "Clifford", age: 12}))
+//     //   return realm.create(DogSchema, {name: "Sandro", age: 12});
+//     //   // return realm.create("Dog", {name: "Clifford", age: 12});
+//     // });     
     
 
-    // // update dog's age
-    // realm.write(() => {
-    //   dog.age = 13;
-    // });
+//     // // update dog's age
+//     // realm.write(() => {
+//     //   dog.age = 13;
+//     // });
 
-    // // delete dog
-    // realm.write(() => {
-    //   realm.delete(dog);
-    // });
+//     // // delete dog
+//     // realm.write(() => {
+//     //   realm.delete(dog);
+//     // });
 
-    // // get all dogs
-    // const dogs = realm.objects(DogSchema);
-    // const dogs = realm.objects('Dog');
-    // console.log(`Main: Number of Dog objects: ${dogs.length}`);
+//     // // get all dogs
+//     // const dogs = realm.objects(DogSchema);
+//     // const dogs = realm.objects('Dog');
+//     // console.log(`Main: Number of Dog objects: ${dogs.length}`);
 
-    // realm.write(() => {
-    //   realm.deleteAll();
-    // })
+//     // realm.write(() => {
+//     //   realm.deleteAll();
+//     // })
 
-    // realm.close();
+//     // realm.close();
 
-  } catch(err) {
-    // console.error("Failed to log in", err);
-    console.error("err", err);
-  } 
-}
+//   } catch(err) {
+//     // console.error("Failed to log in", err);
+//     console.error("err", err);
+//   } 
+// }
 
 app.whenReady().then( async () => {
 
