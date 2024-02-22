@@ -201,13 +201,12 @@ const initRealm = async () => {
 };
 
 const addRecord = async (schema, payload) => {
-  // realm.write(() => {
-  //   realm.create(Task, {
-  //     _id: 4,
-  //     name: "Kino Shops",
-  //     status: "Open",
-  //   });
-  // });  
+  realm.write(() => {
+    realm.create(Task, {
+      name: "Kino Shops",
+      status: "Open",
+    });
+  });  
 }
 
 const updateRecord = async (schema, payload, id) => {

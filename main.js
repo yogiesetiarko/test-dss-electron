@@ -17,8 +17,8 @@ async function handleFileOpen () {
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 1000,
-    height: 600,
+    width: 1600,
+    height: 1000,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: true,
@@ -38,7 +38,8 @@ function createWindow() {
     protocol: 'file'
   });
 
-  win.loadURL(startUrl);
+  // win.loadURL(startUrl);
+  win.loadURL('http://localhost:5173/');
 
   // Open DevTools if in development mode
   if (process.env.NODE_ENV === 'development') {
