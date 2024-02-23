@@ -4,7 +4,9 @@ const url = require('url');
 const path = require('path');
 const axios = require('axios');
 const LoginService = require('./services/LoginService');
-const InitDb = require('./services/InitDb')
+const InitDb = require('./services/InitDb');
+// const isDev = require('electron-is-dev');
+const isPackaged = require('electron-is-packaged').isPackaged;
 
 let win;
 
@@ -37,6 +39,9 @@ function createWindow() {
     // pathname: path.join(__dirname, '../test-dss-reactjs/dist/index.html'),
     protocol: 'file'
   });
+
+  // console.log("process.env.NODE_ENV", process.env.NODE_ENV)
+  console.log("isPackaged", isPackaged)
 
   // win.loadURL(startUrl);
   win.loadURL('http://localhost:5173/');
@@ -330,6 +335,22 @@ ipcMain.handle( 'login', async ( event, data ) => {
   let options = {'headers': { 'Content-Type': 'application/json'}}
   let response = await LoginService.handleLogin(payload, options).then((result) => { return result; }).catch((error) => {return error});
   return response
+});
+
+ipcMain.handle('get:productById', async (event, data) => {
+  console.log("get:productById main.js")
+  console.log("get:productById data", data)
+  return {
+    success: true,
+    message: 'success',
+    data: {
+      title: "Sepatu",
+      price: 55000,
+      stock: 25,
+      detail: "ala ala ala",      
+      description: "ala ala ala description",
+    }
+  }
 });
 
 ipcMain.handle('get:products', async (event, data) => {

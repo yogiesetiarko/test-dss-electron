@@ -16,7 +16,11 @@ const ipc = {
     // From render to main and back again.
     'sendReceive': [
       'login',
-      'get:products'
+      'get:products',
+      'get:productById',
+      'post:newProduct',
+      'put:productById',
+      'del:productById',
     ],
   }
 };
