@@ -1,4 +1,5 @@
 const Realm = require('realm');
+// const bson = require('bs');
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const url = require('url');
 const path = require('path');
@@ -89,7 +90,16 @@ async function openRealm() {
 }
 
 function getProducts() {
-  return realm ? realm.objects(Products).filtered('title == "Handuk"') : [];
+  // return realm ? realm.objects(Products).filtered('title == "Handuk"') : [];
+  return realm ? realm.objects(Products) : [];
+}
+
+function getProductById(id) {
+  // Electron.ObjectId(id)
+  // console.log(Electron.ObjectId(id))
+  // realm.objectForPrimaryKey("Products", id);
+  // return realm ? realm.objects(Products).filtered("_id == $0", ObjectId(id)) : [];
+  return realm ? realm.objectForPrimaryKey("Products", new Realm.BSON.ObjectID(id)) : [];
 }
 
 let win;
@@ -243,15 +253,15 @@ ipcMain.handle('get:products', async (event, data) => {
   // const products = realm.objects('Products');
 
   let products = getProducts();
-  console.log('products.length', products.length)
-  console.log('products', products)
+  // console.log('products.length', products.length)
+  // console.log('products', products)
 
   // if error => An object could not be cloned must do set itemone by one using forEach / map
   // second solution, use the serialize, so the array / object become string
   let newArr = [];
   products.forEach(element => {
-    // console.log("element", element)
-    let item = {
+    const item = {
+      _id: element._id.toString(),
       title: element.title,
       stock: element.stock,
       price: element.price,
@@ -262,7 +272,7 @@ ipcMain.handle('get:products', async (event, data) => {
     }
     newArr.push(item)
   });
-  console.log('newArr', newArr)
+  // console.log('newArr', newArr)
   
   return {data: newArr}
   // return products
@@ -272,34 +282,26 @@ ipcMain.handle('get:productById', async (event, data) => {
   console.log("get:productById main.js")
   console.log("get:productById data", data)
 
-  const realmApp = new Realm.App({ id: 'thehello-mghcp' }); // create a new instance of the Realm.App
-  const credentials = Realm.Credentials.anonymous();
-  const user = await realmApp.logIn(credentials);
+  // const realmApp = new Realm.App({ id: 'thehello-mghcp' }); // create a new instance of the Realm.App
+  // const credentials = Realm.Credentials.anonymous();
+  // const user = await realmApp.logIn(credentials);
 
-  const config = {
-    schema: [Products],
-    sync: {
-      user: user,
-      flexible: true,
-      initialSubscriptions: {
-        update: (subs, realm) => {
-          subs.add(
-            realm
-              // Use the mapped name in Flexible Sync subscriptions.
-              .objects(`Products`)
-              // .filtered('name == "Dedo"')
-          );
-        },
-      },
-    },      
+  let product = getProductById(data.id);
+  // console.log("product", product)
+  const resultData = {
+    _id: product._id.toString(),
+    detail_product: product.detail_product,
+    image: product.image,
+    title: product.title,
+    price: product.price,
+    stock: product.stock,
+    description: product.description,
+    rating: product.rating
   }
-
-  const realm = await Realm.open(config);
-  const product = realm.objects('Products').filtered('title == "Handuk"');
 
   return {
     success: true,
-    message: 'success',
+    message: 'successa',
     // data: {
     //   title: "Sepatu",
     //   price: 55000,
@@ -307,7 +309,7 @@ ipcMain.handle('get:productById', async (event, data) => {
     //   detail: "ala ala ala",      
     //   description: "ala ala ala description",
     // }
-    data: product
+    data: resultData
   }
 });
 
