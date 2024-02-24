@@ -2,12 +2,15 @@ const Realm = require('realm');
 const Products = require('../models/Products')
 const Task = require('../models/Task')
 
-const initRealm = async () => {
-  const realmApp = new Realm.App({ id: 'thehello-mghcp' }); // create a new instance of the Realm.App
+const realmApp = new Realm.App({ id: 'thehello-mghcp' }); // create a new instance of the Realm.App
+const credentials = Realm.Credentials.anonymous();
 
-  const credentials = Realm.Credentials.anonymous();
+const initRealm = async () => {
+  // const realmApp = new Realm.App({ id: 'thehello-mghcp' }); // create a new instance of the Realm.App
+
+  // const credentials = Realm.Credentials.anonymous();
   try {
-    const user = await realmApp.logIn(credentials);
+    // const user = await realmApp.logIn(credentials);
 
     // const DogSchema = {
     //   name: "Dog",
@@ -25,23 +28,23 @@ const initRealm = async () => {
     // Flexible Sync uses subscriptions and permissions to determine what data to sync with your App. 
     // You must have at least one subscription before 
     // you can read from or write to a realm with Flexible Sync enabled.
-    const config = {
-      schema: [Task, Products],
-      sync: {
-        user: user,
-        flexible: true,
-        initialSubscriptions: {
-          update: (subs, realm) => {
-            subs.add(
-              realm
-                // Use the mapped name in Flexible Sync subscriptions.
-                .objects(`Task`)
-                // .filtered('name == "Dedo"')
-            );
-          },
-        },
-      },      
-    }
+    // const config = {
+    //   schema: [Task, Products],
+    //   sync: {
+    //     user: user,
+    //     flexible: true,
+    //     initialSubscriptions: {
+    //       update: (subs, realm) => {
+    //         subs.add(
+    //           realm
+    //             // Use the mapped name in Flexible Sync subscriptions.
+    //             .objects(`Products`)
+    //             // .filtered('name == "Dedo"')
+    //         );
+    //       },
+    //     },
+    //   },      
+    // }
 
     // open a synced realm
     // const realm = await Realm.open(config);    
@@ -49,7 +52,7 @@ const initRealm = async () => {
 
 
     // NEW
-    const realm = await Realm.open(config);
+    // const realm = await Realm.open(config);
     // console.log("realm", realm)
 
     // const realmFileLocation = realm.path;
@@ -200,13 +203,104 @@ const initRealm = async () => {
   } 
 };
 
+const getRecords = async (schema, payload) => {
+  try {
+    console.log("payload", payload)
+    // const realmApp = new Realm.App({ id: 'thehello-mghcp' });
+    // const credentials = Realm.Credentials.anonymous();
+    const user = await realmApp.logIn(credentials);
+
+    const config = {
+      schema: [Products],
+      sync: {
+        user: user,
+        flexible: true,
+        initialSubscriptions: {
+          update: (subs, realm) => {
+            subs.add(
+              realm
+                // Use the mapped name in Flexible Sync subscriptions.
+                .objects(`Products`)
+                // .filtered('name == "Dedo"')
+            );
+          },
+        },
+      },      
+    }
+
+    const realm = await Realm.open(config);
+
+    // await realm.subscriptions.update((subs) => {
+    //   const products = realm
+    //     .objects('Products');
+    //   // console.log("products inside subs", products)
+    //   subs.add(products);
+    // });
+
+    // const products = realm.objects('Products');
+    // console.log("products", products)
+
+    realm.close();
+
+    return products;
+    // return [];
+  } catch(err) {
+    console.log("err", err)
+  }
+}
+
 const addRecord = async (schema, payload) => {
-  realm.write(() => {
-    realm.create(Task, {
-      name: "Kino Shops",
-      status: "Open",
+  try {
+    console.log("payload", payload)
+    const realmApp = new Realm.App({ id: 'thehello-mghcp' });
+    const credentials = Realm.Credentials.anonymous();
+    const user = await realmApp.logIn(credentials);
+
+    const config = {
+      schema: [Products],
+      sync: {
+        user: user,
+        flexible: true,
+        // initialSubscriptions: {
+        //   update: (subs, realm) => {
+        //     subs.add(
+        //       realm
+        //         // Use the mapped name in Flexible Sync subscriptions.
+        //         .objects(`Products`)
+        //         // .filtered('name == "Dedo"')
+        //     );
+        //   },
+        // },
+      },      
+    }
+
+    const realm = await Realm.open(config);
+
+    await realm.subscriptions.update((subs) => {
+      const products = realm
+        .objects('Products');
+      console.log("products inside subs", products)
+      subs.add(products);
     });
-  });  
+
+    let result = realm.write(() => {
+      return realm.create(Products, {
+        title: payload.title,
+        price: Number(payload.price),
+        stock: Number(payload.stock),
+        detail_product: payload.detail,
+        description: payload.description,
+        // image: payload.image_product,
+        image: 'aa',
+        rating: 5
+      });
+    });  
+    console.log("result", result)
+
+    realm.close();
+  } catch(err) {
+    console.log("err", err)
+  }
 }
 
 const updateRecord = async (schema, payload, id) => {
@@ -221,4 +315,4 @@ const detailRecord = async (schema, payload, id) => {
 
 }
 
-module.exports = { initRealm, addRecord, updateRecord, deleteRecord, detailRecord };
+module.exports = { initRealm, addRecord, updateRecord, deleteRecord, detailRecord, getRecords };

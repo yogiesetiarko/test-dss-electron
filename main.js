@@ -7,6 +7,90 @@ const LoginService = require('./services/LoginService');
 const InitDb = require('./services/InitDb');
 // const isDev = require('electron-is-dev');
 const isPackaged = require('electron-is-packaged').isPackaged;
+const Products = require('./models/Products')
+let theapp = null;
+let realm = null;
+let currentUser = null;
+
+// const realmapp = new Realm.App({ id: "thehello-mghcp" });
+
+function getCurrentUser() {
+  return currentUser;
+}
+
+function makeRealm() {
+  theapp = new Realm.App({ id: "thehello-mghcp" });  
+  return theapp;
+}
+
+
+
+async function loginAtlas() {
+  // console.log("theapp",theapp)
+  const credentials = Realm.Credentials.anonymous();
+  currentUser = await theapp.logIn(credentials);  
+  // console.log("currentUser", currentUser)
+  return true;
+}
+
+async function openRealm() {
+  // const nowUser = getCurrentUser();
+  const credentials = Realm.Credentials.anonymous();
+  const nowUser = await theapp.logIn(credentials);  
+  
+  // console.log("nowUser", nowUser)
+  const config = {
+    schema: [Products],
+    sync: {
+      user: nowUser,
+      flexible: true,
+      // initialSubscriptions: {
+      //   update: (subs, realm) => {
+      //     subs.add(
+      //       realm
+      //         // Use the mapped name in Flexible Sync subscriptions.
+      //         .objects(`Products`)
+      //         // .filtered('name == "Dedo"')
+      //     );
+      //     // console.log(">>>", realm.objects('Products'))
+      //   },
+      // },
+      // initialSubscriptions: {
+      //   update: (mutableSubs, realm) => {
+      //     // Subscribe to the store with the given ID.
+      //     mutableSubs.add(
+      //       realm.objects(Store).filtered("_id = $0", SYNC_STORE_ID),
+      //       { name: "storeA" },
+      //     );
+      //     // Subscribe to all kiosks in the store with the given ID.
+      //     mutableSubs.add(
+      //       realm.objects(Kiosk).filtered("storeId = $0", SYNC_STORE_ID),
+      //       { name: "kiosksInStoreA" },
+      //     );
+      //     // Subscribe to all products in the store with the given ID.
+      //     mutableSubs.add(
+      //       realm.objects(Product).filtered("storeId = $0", SYNC_STORE_ID),
+      //       { name: "productsInStoreA" },
+      //     );
+      //   },
+      // },
+    },      
+    // path: '../'
+  }
+  realm = await Realm.open(config);
+  await realm.subscriptions.update((subs) => {
+    const products = realm
+      .objects(Products);
+    // console.log("products inside subs", products)
+    subs.add(products);
+  });
+  // console.log(">>>", realm)
+  return realm;
+}
+
+function getProducts() {
+  return realm ? realm.objects(Products).filtered('title == "Handuk"') : [];
+}
 
 let win;
 
@@ -53,243 +137,12 @@ function createWindow() {
   }
 
   // initRealm();
-  InitDb.initRealm();
+  // InitDb.initRealm();
+  // win.webContents.send('pushDetails', {'name': 'halo'});
+  // run();
+
+
 }
-
-// async function initRealm() {
-//   const realmApp = new Realm.App({ id: 'thehello-mghcp' }); // create a new instance of the Realm.App
-
-//   const credentials = Realm.Credentials.anonymous();
-//   try {
-//     const user = await realmApp.logIn(credentials);
-//     // console.log("user", user)
-//     // const DogSchema = {
-//     //   name: "Dog",
-//     //   primaryKey: "_id",
-//     //   properties: {
-//     //     _id: { type: "objectId", default: () => new Realm.BSON.ObjectId() },
-//     //     name: "string",
-//     //     age: "int",
-//     //   },
-//     // }; 
-  
-//     class Task extends Realm.Object {
-//       static schema = {
-
-//         // name: 'Dog',
-//         // properties: {
-//         //   _id: 'objectId',
-//         //   age: 'int?',
-//         //   name: 'string?',
-//         // },
-//         // primaryKey: '_id',
-
-//         // name: "Dog",
-//         // primaryKey: "_id",
-//         // properties: {
-//         //   _id: { type: "objectId", default: () => new Realm.BSON.ObjectId() },
-//         //   name: "string",
-//         //   age: "int",
-//         // },
-
-//         // name: "Dog",
-//         // primaryKey: '_id',
-//         // properties: {
-//         //     _id: { type: "objectId", default: () => new Realm.BSON.ObjectId() },
-//         //     name: "string",
-//         //     age: "int",
-//         //     breed: "string?"
-//         // },
-
-//         name: "Task",
-//         properties: {
-//           _id: "int",
-//           name: "string",
-//           status: "string?",
-//           owner_id: "string?",
-//         },
-//         primaryKey: "_id",        
-
-//       };
-//     }
-
-//     // Flexible Sync uses subscriptions and permissions to determine what data to sync with your App. 
-//     // You must have at least one subscription before 
-//     // you can read from or write to a realm with Flexible Sync enabled.
-//     const config = {
-//       schema: [Task],
-//       sync: {
-//         user: user,
-//         flexible: true,
-//         initialSubscriptions: {
-//           update: (subs, realm) => {
-//             subs.add(
-//               realm
-//                 // Use the mapped name in Flexible Sync subscriptions.
-//                 .objects(`Task`)
-//                 // .filtered('name == "Dedo"')
-//             );
-//           },
-//         },
-//       },      
-//     }
-
-//     // open a synced realm
-//     // const realm = await Realm.open(config);    
-//     // console.log("realm", realm)
-
-
-//     // NEW
-//     const realm = await Realm.open(config);
-//     // console.log("realm", realm)
-
-//     const realmFileLocation = realm.path;
-//     console.log(`Realm file is located at: ${realm.path}`);
-
-//     const tasks = realm.objects(Task);
-//     console.log("tasks", tasks)
-
-//     // // ====== add
-//     // // await realm.subscriptions.update((subs) => {
-//     // //   const tasks = realm
-//     // //     .objects('Task');
-//     // //   console.log("tasks inside subs", tasks)
-//     // //   subs.add(tasks);
-//     // // });
-
-//     // realm.write(() => {
-//     //   realm.create(Task, {
-//     //     _id: 4,
-//     //     name: "Kino Shops",
-//     //     status: "Open",
-//     //   });
-//     // });
-//     // // console.log("res", res)
-
-//     // // ===========
-
-//     // // ====== edit no need subs first
-//     // // await realm.subscriptions.update((subs) => {
-//     // //   const tasks = realm
-//     // //     .objects('Task')
-//     // //     .filtered('name == "go grocery shopping"');
-//     // //   console.log("tasks inside subs", tasks)
-//     // //   subs.add(tasks);      
-
-//     // //   // // update dog's age
-//     // //   // realm.write(() => {
-//     // //   //   tasks.status = 'closed';
-//     // //   // });
-
-//     // // });
-//     // // console.log("edit tasks", tasks)
-
-//     // // update dog's age
-//     // realm.write(() => {
-//     //   const task = realm.objects(Task)[0];
-//     //   console.log("task inside edit write", task)
-//     //   task.status = 'Ahooy';
-//     // });
-
-//     // // ===========
-
-//     // // // delete =============
-//     // // const task = realm.objects("Task").filtered("_id == 2");
-//     // // console.log("task", task)
-//     // realm.write(() => {
-//     //   // Find dogs younger than 2 years old.
-//     //   let task = realm.objects("Task").filtered("_id == 2");
-//     //   console.log("task", task)
-//     //   // Delete the collection from the realm.
-//     //   realm.delete(task);
-//     //   // Discard the reference.
-//     //   task = null;
-//     // });    
-//     // // ====================
-
-//     // // READ ================
-//     // const myTask = realm.objectForPrimaryKey("Task", 3);
-//     // console.log("myTask", myTask)
-//     // // =====================
-
-//     // const task1 = tasks.find((task) => task._id == 1);
-//     // console.log("task1", task1)
-
-//     // realm.close();
-
-//     // const subs = realm.subscriptions;
-//     // subs.update((mutableSubs) => {
-//     //     sub = mutableSubs.add(realm.objects("Dog").filtered("age > 5"));
-//     // });
-//     // await realm.subscriptions.waitForSynchronization();
-
-//     // Realm Writes are transactional and Sync automatically
-//     // let res = realm.write(() => {
-//     //     realm.create(DogSchema, {
-//     //         name: "Princess Gracie",
-//     //         age: 6,
-//     //         breed: "aaa"
-//     //     });
-//     // });
-//     // console.log("res", res)
-
-//     // // Data Synced onto a device can be queried locally
-//     // const allDogs = realm.objects("Dog");
-//     // const olderDogs = alLDogs.filtered("age < 5");
-
-//     // =======
-
-
-//     // console.log(realm.create({name: "Clifford", age: 12}))
-
-//     // const dog = realm.write(() => {
-//     //   // Use the mapped name when performing CRUD operations.
-//     //   return realm.create(`Dog`, {
-//     //     _id: new Realm.BSON.ObjectId(),
-//     //     name: "Sandro", 
-//     //     age: 12
-//     //   });
-//     // });
-
-//     // // console.log("dog", dog);
-
-//     // const assignedDog = realm.objects(`Dog`);
-//     // console.log(`${assignedDog}`);
-
-//     // // create new dog
-//     // const dog = realm.write(() => {
-//     //   // console.log(realm.create(DogSchema, {name: "Clifford", age: 12}))
-//     //   return realm.create(DogSchema, {name: "Sandro", age: 12});
-//     //   // return realm.create("Dog", {name: "Clifford", age: 12});
-//     // });     
-    
-
-//     // // update dog's age
-//     // realm.write(() => {
-//     //   dog.age = 13;
-//     // });
-
-//     // // delete dog
-//     // realm.write(() => {
-//     //   realm.delete(dog);
-//     // });
-
-//     // // get all dogs
-//     // const dogs = realm.objects(DogSchema);
-//     // const dogs = realm.objects('Dog');
-//     // console.log(`Main: Number of Dog objects: ${dogs.length}`);
-
-//     // realm.write(() => {
-//     //   realm.deleteAll();
-//     // })
-
-//     // realm.close();
-
-//   } catch(err) {
-//     // console.error("Failed to log in", err);
-//     console.error("err", err);
-//   } 
-// }
 
 app.whenReady().then( async () => {
 
@@ -300,6 +153,14 @@ app.whenReady().then( async () => {
   //     age: 5,
   //   });
   // });
+
+  makeRealm();
+  loginAtlas();
+  await openRealm();
+  // const products = getProducts();
+  // const products = realm.objects('Products');
+  // console.log("products", products)
+  // const products = realm.objects('Products');
 
   // ipcMain.handle('dialog:openFile', handleFileOpen)
   createWindow()
@@ -326,9 +187,9 @@ app.on('activate', function () {
   }
 });
 
-ipcMain.handle('', async (event, data) => {
+// ipcMain.handle('', async (event, data) => {
 
-});
+// });
 
 ipcMain.handle( 'login', async ( event, data ) => {
   let payload = {'username': data.username,'password': data.password}
@@ -337,46 +198,166 @@ ipcMain.handle( 'login', async ( event, data ) => {
   return response
 });
 
-ipcMain.handle('get:productById', async (event, data) => {
-  console.log("get:productById main.js")
-  console.log("get:productById data", data)
+ipcMain.handle('post:newProduct', async (event, data) => {
+  // console.log("data", data)
+  // data.form
+  await InitDb.addRecord('Products', data.form)
+  // for (const value of data.form.values()) {
+  //   console.log(value);
+  // }
   return {
     success: true,
-    message: 'success',
-    data: {
-      title: "Sepatu",
-      price: 55000,
-      stock: 25,
-      detail: "ala ala ala",      
-      description: "ala ala ala description",
-    }
+    message: 'successa',
   }
 });
 
-ipcMain.handle('get:products', async (event, data) => {
-  console.log("get:products main.js")
+ipcMain.handle('get:products', async (event, data) => { 
+  // const realmApp = new Realm.App({ 
+  //   id: 'thehello-mghcp', 
+  //   // baseFilePath: '../' 
+  // }); // create a new instance of the Realm.App
+  // const credentials = Realm.Credentials.anonymous();
+  // const user = await realmApp.logIn(credentials);
+
+  // const config = {
+  //   schema: [Products],
+  //   sync: {
+  //     user: user,
+  //     flexible: true,
+  //     initialSubscriptions: {
+  //       update: (subs, realm) => {
+  //         subs.add(
+  //           realm
+  //             // Use the mapped name in Flexible Sync subscriptions.
+  //             .objects(`Products`)
+  //             // .filtered('name == "Dedo"')
+  //         );
+  //       },
+  //     },
+  //     // rerunOnOpen: true,
+  //   },      
+  //   // path: '../'
+  // }
+
+  // const realm = await Realm.open(config);
+  // const products = realm.objects('Products');
+
+  let products = getProducts();
+  console.log('products.length', products.length)
+  console.log('products', products)
+
+  // if error => An object could not be cloned must do set itemone by one using forEach / map
+  // second solution, use the serialize, so the array / object become string
+  let newArr = [];
+  products.forEach(element => {
+    // console.log("element", element)
+    let item = {
+      title: element.title,
+      stock: element.stock,
+      price: element.price,
+      detail_product: element.detail_product,
+      image: element.image,
+      description: element.description,
+      rating: element.rating
+    }
+    newArr.push(item)
+  });
+  console.log('newArr', newArr)
+  
+  return {data: newArr}
+  // return products
+});
+
+ipcMain.handle('get:productById', async (event, data) => {
+  console.log("get:productById main.js")
+  console.log("get:productById data", data)
+
+  const realmApp = new Realm.App({ id: 'thehello-mghcp' }); // create a new instance of the Realm.App
+  const credentials = Realm.Credentials.anonymous();
+  const user = await realmApp.logIn(credentials);
+
+  const config = {
+    schema: [Products],
+    sync: {
+      user: user,
+      flexible: true,
+      initialSubscriptions: {
+        update: (subs, realm) => {
+          subs.add(
+            realm
+              // Use the mapped name in Flexible Sync subscriptions.
+              .objects(`Products`)
+              // .filtered('name == "Dedo"')
+          );
+        },
+      },
+    },      
+  }
+
+  const realm = await Realm.open(config);
+  const product = realm.objects('Products').filtered('title == "Handuk"');
+
   return {
     success: true,
     message: 'success',
-    data: [
-      {
-        title: "Sepatu",
-        price: 55000,
-        stock: 25
-      },
-      {
-        title: "Baju",
-        price: 45000,
-        stock: 244
-      },
-      {
-        title: "Topi",
-        price: 25000,
-        stock: 2578
-      },
-    ]
+    // data: {
+    //   title: "Sepatu",
+    //   price: 55000,
+    //   stock: 25,
+    //   detail: "ala ala ala",      
+    //   description: "ala ala ala description",
+    // }
+    data: product
   }
 });
+
+// ipcMain.handle('get:products', (event, data) => {
+//   // console.log("get:products main.js")
+//   // let result = InitDb.getRecords('Products', {'aha':'halo'});
+//   // console.log("result", result)
+
+//   const realmApp = new Realm.App({ id: 'thehello-mghcp' }); // create a new instance of the Realm.App
+//   const credentials = Realm.Credentials.anonymous();
+//   const user = realmApp.logIn(credentials);
+//   // const config = {
+//   //   schema: [Products],
+//   //   sync: {
+//   //     user: user,
+//   //     flexible: true,
+//   //     initialSubscriptions: {
+//   //       update: (subs, realm) => {
+//   //         subs.add(
+//   //           realm
+//   //             // Use the mapped name in Flexible Sync subscriptions.
+//   //             .objects(`Products`)
+//   //             // .filtered('name == "Dedo"')
+//   //         );
+//   //       },
+//   //     },
+//   //   },      
+//   // }
+
+//   // const realm = Realm.open(config);
+//   // const products = realm.objects('Products');
+//   // console.log("products", products)  
+
+//   return {
+//     success: true,
+//     message: 'success',
+//     data: []
+//   }
+// });
+
+// ipcMain.handle('get:products', async (event, data) => { 
+//   // return InitDb.getRecords('Products', data); 
+//   return await InitDb.getRecords('Products', data).then(() => { return result; })
+// });
+
+// ipcMain.handle('get:products', async (event, data) => { 
+//   // return InitDb.getRecords('Products', data); 
+//   // return await InitDb.getRecords('Products', data).then(() => { return result; })
+//   return []
+// });
 
 ipcMain.on('login:failed', async (event, data) => {
   // Open a simple message box

@@ -7,11 +7,13 @@ const ipc = {
     // From render to main.
     'send': [
       'openDetailsWindow',
-      'login:failed'
+      'login:failed',
+      'get:products',
     ],
     // From main to render.
     'receive': [
-      'pushDetails'
+      'pushDetails',
+      'get:products',
     ],
     // From render to main and back again.
     'sendReceive': [
@@ -25,26 +27,6 @@ const ipc = {
   }
 };
 
-contextBridge.exposeInMainWorld('testApi', {
-  // Invoke Methods
-  testInvoke: (args) => ipcRenderer.invoke('test-invoke', args),
-  // Send Methods
-  testSend: (args) => ipcRenderer.send('test-send', args),
-  // Receive Methods
-  testReceive: (callback) => ipcRenderer.on('test-receive', (event, data) => { callback(data) })
-});
-
-contextBridge.exposeInMainWorld('electron', {
-  homeDir: () => os.homedir(),
-  osVersion: () => os.version(),
-  osArch: () => os.arch(),
-});
-
-contextBridge.exposeInMainWorld('ipcRenderer', {
-  send: (channel, data) => ipcRenderer.send(channel, data),
-  on: (channel, func) =>
-    ipcRenderer.on(channel, (event, ...args) => func(event, ...args)),
-});
 
 contextBridge.exposeInMainWorld( 'api', {
   // send: ( channel, data ) => ipcRenderer.invoke( channel, data ),
@@ -76,6 +58,28 @@ contextBridge.exposeInMainWorld( 'api', {
   }
 
 });
+
+contextBridge.exposeInMainWorld('testApi', {
+  // Invoke Methods
+  testInvoke: (args) => ipcRenderer.invoke('test-invoke', args),
+  // Send Methods
+  testSend: (args) => ipcRenderer.send('test-send', args),
+  // Receive Methods
+  testReceive: (callback) => ipcRenderer.on('test-receive', (event, data) => { callback(data) })
+});
+
+contextBridge.exposeInMainWorld('electron', {
+  homeDir: () => os.homedir(),
+  osVersion: () => os.version(),
+  osArch: () => os.arch(),
+});
+
+contextBridge.exposeInMainWorld('ipcRenderer', {
+  send: (channel, data) => ipcRenderer.send(channel, data),
+  on: (channel, func) =>
+    ipcRenderer.on(channel, (event, ...args) => func(event, ...args)),
+});
+
 
 contextBridge.exposeInMainWorld('electronAPI', {
   openFile: () => ipcRenderer.invoke('dialog:openFile')
