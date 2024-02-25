@@ -252,36 +252,36 @@ const getRecords = async (schema, payload) => {
 const addRecord = async (schema, payload) => {
   try {
     console.log("payload", payload)
-    const realmApp = new Realm.App({ id: 'thehello-mghcp' });
-    const credentials = Realm.Credentials.anonymous();
-    const user = await realmApp.logIn(credentials);
+    // const realmApp = new Realm.App({ id: 'thehello-mghcp' });
+    // const credentials = Realm.Credentials.anonymous();
+    // const user = await realmApp.logIn(credentials);
 
-    const config = {
-      schema: [Products],
-      sync: {
-        user: user,
-        flexible: true,
-        // initialSubscriptions: {
-        //   update: (subs, realm) => {
-        //     subs.add(
-        //       realm
-        //         // Use the mapped name in Flexible Sync subscriptions.
-        //         .objects(`Products`)
-        //         // .filtered('name == "Dedo"')
-        //     );
-        //   },
-        // },
-      },      
-    }
+    // const config = {
+    //   schema: [Products],
+    //   sync: {
+    //     user: user,
+    //     flexible: true,
+    //     // initialSubscriptions: {
+    //     //   update: (subs, realm) => {
+    //     //     subs.add(
+    //     //       realm
+    //     //         // Use the mapped name in Flexible Sync subscriptions.
+    //     //         .objects(`Products`)
+    //     //         // .filtered('name == "Dedo"')
+    //     //     );
+    //     //   },
+    //     // },
+    //   },      
+    // }
 
-    const realm = await Realm.open(config);
+    // const realm = await Realm.open(config);
 
-    await realm.subscriptions.update((subs) => {
-      const products = realm
-        .objects('Products');
-      console.log("products inside subs", products)
-      subs.add(products);
-    });
+    // await realm.subscriptions.update((subs) => {
+    //   const products = realm
+    //     .objects('Products');
+    //   console.log("products inside subs", products)
+    //   subs.add(products);
+    // });
 
     let result = realm.write(() => {
       return realm.create(Products, {

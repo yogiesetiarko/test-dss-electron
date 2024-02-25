@@ -24,13 +24,9 @@ function makeRealm() {
   return theapp;
 }
 
-
-
 async function loginAtlas() {
-  // console.log("theapp",theapp)
   const credentials = Realm.Credentials.anonymous();
   currentUser = await theapp.logIn(credentials);  
-  // console.log("currentUser", currentUser)
   return true;
 }
 
@@ -90,16 +86,55 @@ async function openRealm() {
 }
 
 function getProducts() {
-  // return realm ? realm.objects(Products).filtered('title == "Handuk"') : [];
   return realm ? realm.objects(Products) : [];
 }
 
 function getProductById(id) {
-  // Electron.ObjectId(id)
-  // console.log(Electron.ObjectId(id))
-  // realm.objectForPrimaryKey("Products", id);
-  // return realm ? realm.objects(Products).filtered("_id == $0", ObjectId(id)) : [];
   return realm ? realm.objectForPrimaryKey("Products", new Realm.BSON.ObjectID(id)) : [];
+}
+
+function addRecord(payload) {
+  let result = realm.write(() => {
+    return realm.create(Products, {
+      title: payload.title,
+      price: Number(payload.price),
+      stock: Number(payload.stock),
+      detail_product: payload.detail,
+      description: payload.description,
+      image: payload.image_product,
+      rating: payload.rating
+    });
+  });  
+  // console.log("result", result)  
+  return result;
+}
+
+function updateRecord(id, payload) {
+  realm.write(() => {
+    let product = getProductById(id);
+
+    product.title = payload.title
+    product.price = Number(payload.price)
+    product.stock = Number(payload.stock)
+    product.detail_product = payload.detail
+    product.description = payload.description
+    product.image = payload.image_product
+    product.rating = payload.rating
+
+    product = null;
+    return {a: "zz"};
+  });
+}
+
+function deleteRecord(id) {
+  realm.write(() => {
+    let product = getProductById(id);
+    realm.delete(product);
+
+    // Discard the reference.
+    product = null;
+    return {a: "zz"};
+  })
 }
 
 let win;
@@ -129,16 +164,19 @@ function createWindow() {
   
   const startUrl = url.format({
     pathname: path.join(__dirname, 'app/index.html'),
-    // pathname: path.join(__dirname, './app/build/index.html'),
-    // pathname: path.join(__dirname, '../test-dss-reactjs/dist/index.html'),
     protocol: 'file'
   });
 
   // console.log("process.env.NODE_ENV", process.env.NODE_ENV)
   console.log("isPackaged", isPackaged)
 
-  // win.loadURL(startUrl);
-  win.loadURL('http://localhost:5173/');
+  if(isPackaged) {
+    win.loadURL(startUrl);
+  } else {
+    // win.loadURL(startUrl);
+    win.loadURL('http://localhost:5173/');
+  }
+
 
   // Open DevTools if in development mode
   if (process.env.NODE_ENV === 'development') {
@@ -208,18 +246,37 @@ ipcMain.handle( 'login', async ( event, data ) => {
   return response
 });
 
-ipcMain.handle('post:newProduct', async (event, data) => {
-  // console.log("data", data)
-  // data.form
-  await InitDb.addRecord('Products', data.form)
-  // for (const value of data.form.values()) {
-  //   console.log(value);
-  // }
+ipcMain.handle('post:newProduct', (event, data) => {
+
+  // await InitDb.addRecord('Products', data.form)
+  let result = addRecord(data.form)
+  
+  return {
+    success: true,
+    message: 'success',
+  }
+});
+
+ipcMain.handle('put:productById', (event, data) => {
+
+  // await InitDb.addRecord('Products', data.form)
+  let result = updateRecord(data.id, data.form)
+  console.log("result", result)
+  
+  return {
+    success: true,
+    message: 'success',
+  }
+});
+
+ipcMain.handle('del:productById', (event, data) => {
+  let result = deleteRecord(data.id)
+
   return {
     success: true,
     message: 'successa',
   }
-});
+})
 
 ipcMain.handle('get:products', async (event, data) => { 
   // const realmApp = new Realm.App({ 
@@ -279,8 +336,8 @@ ipcMain.handle('get:products', async (event, data) => {
 });
 
 ipcMain.handle('get:productById', async (event, data) => {
-  console.log("get:productById main.js")
-  console.log("get:productById data", data)
+  // console.log("get:productById main.js")
+  // console.log("get:productById data", data)
 
   // const realmApp = new Realm.App({ id: 'thehello-mghcp' }); // create a new instance of the Realm.App
   // const credentials = Realm.Credentials.anonymous();
