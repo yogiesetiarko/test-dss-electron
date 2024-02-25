@@ -1,6 +1,9 @@
 const Realm = require('realm');
 // const bson = require('bs');
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const config = require("dotenv");
+config.config();
+
 const url = require('url');
 const path = require('path');
 const axios = require('axios');
@@ -20,7 +23,8 @@ function getCurrentUser() {
 }
 
 function makeRealm() {
-  theapp = new Realm.App({ id: "thehello-mghcp" });  
+  // theapp = new Realm.App({ id: "thehello-mghcp" });  
+  theapp = new Realm.App({ id: process.env.REALM_APP_ID });  
   return theapp;
 }
 
@@ -176,7 +180,7 @@ function createWindow() {
     // win.loadURL(startUrl);
     win.loadURL('http://localhost:5173/');
   }
-
+  // console.log("process.env.REALM_APP_ID", process.env.REALM_APP_ID)
 
   // Open DevTools if in development mode
   if (process.env.NODE_ENV === 'development') {
@@ -187,9 +191,6 @@ function createWindow() {
   // initRealm();
   // InitDb.initRealm();
   // win.webContents.send('pushDetails', {'name': 'halo'});
-  // run();
-
-
 }
 
 app.whenReady().then( async () => {
