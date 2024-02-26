@@ -154,6 +154,10 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 1600,
     height: 1000,
+    title: "My App",
+    frame: true,
+    resizable: true,
+    transparent: false,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: true,
