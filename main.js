@@ -1,5 +1,4 @@
 const Realm = require('realm');
-// const bson = require('bs');
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const config = require("dotenv");
 config.config();
@@ -8,7 +7,7 @@ const url = require('url');
 const path = require('path');
 const axios = require('axios');
 const LoginService = require('./services/LoginService');
-const InitDb = require('./services/InitDb');
+// const InitDb = require('./services/InitDb');
 // const isDev = require('electron-is-dev');
 const isPackaged = require('electron-is-packaged').isPackaged;
 const Products = require('./models/Products')
@@ -16,15 +15,19 @@ let theapp = null;
 let realm = null;
 let currentUser = null;
 
-// const realmapp = new Realm.App({ id: "thehello-mghcp" });
-
 function getCurrentUser() {
   return currentUser;
 }
 
 function makeRealm() {
-  // theapp = new Realm.App({ id: "thehello-mghcp" });  
-  theapp = new Realm.App({ id: process.env.REALM_APP_ID });  
+  theapp = new Realm.App({ 
+    // id: process.env.REALM_APP_ID, 
+    id: "thehello-mghcp", 
+    // baseFilePath: '/Users/yogiedigital/Downloads/dss' 
+    // baseFilePath: '/Users/yogiedigital/Library/Application\ Support/test-dss-electron/main' 
+    // baseFilePath: `${app.getPath('userData')}/main` 
+    baseFilePath: `${app.getPath('userData')}` 
+  });  
   return theapp;
 }
 
@@ -76,7 +79,10 @@ async function openRealm() {
       //   },
       // },
     },      
-    // path: '../'
+    // path: `${app.getPath('userData')}`
+    // path: `./mongodb-realm/thehello-mghcp/server-utility/metadata/sync_metadata.realm`
+    // path: `${app.getPath('userData')}/mongodb-realm/thehello-mghcp/server-utility/metadata/sync_metadata.realm`
+    // path: `/`
   }
   realm = await Realm.open(config);
   await realm.subscriptions.update((subs) => {
@@ -164,7 +170,7 @@ function createWindow() {
     },
   });
   
-  win.webContents.openDevTools();
+  // win.webContents.openDevTools();
   
   const startUrl = url.format({
     pathname: path.join(__dirname, 'app/index.html'),
@@ -172,12 +178,19 @@ function createWindow() {
   });
 
   // console.log("process.env.NODE_ENV", process.env.NODE_ENV)
-  console.log("isPackaged", isPackaged)
+  // console.log("isPackaged", isPackaged)
+  // console.log("app.getPath('userData')", app.getPath('userData'))
+  // console.log(app.getPath("appData"))
+  // console.log(process.type)
+  // console.log(process.chdir)
+  // console.log(process.cwd())
+  
 
   if(isPackaged) {
     win.loadURL(startUrl);
   } else {
     // win.loadURL(startUrl);
+    win.webContents.openDevTools({ mode: 'detach' });
     win.loadURL('http://localhost:5173/');
   }
   // console.log("process.env.REALM_APP_ID", process.env.REALM_APP_ID)
@@ -185,7 +198,7 @@ function createWindow() {
   // Open DevTools if in development mode
   if (process.env.NODE_ENV === 'development') {
     // win.webContents.openDevTools();
-    win.webContents.openDevTools({ mode: 'detach' });
+    // win.webContents.openDevTools({ mode: 'detach' });
   }
 
   // initRealm();
@@ -202,10 +215,11 @@ app.whenReady().then( async () => {
   //     age: 5,
   //   });
   // });
-
+  
   makeRealm();
   loginAtlas();
   await openRealm();
+  // process.chdir(`${app.getPath('userData')}/main`);
   // const products = getProducts();
   // const products = realm.objects('Products');
   // console.log("products", products)
@@ -230,11 +244,12 @@ app.on('window-all-closed', () => {
 //     createWindow();
 //   }
 // });
-app.on('activate', function () {
-  if (win === null) {
-    createWindow();
-  }
-});
+
+// app.on('activate', function () {
+//   if (win === null) {
+//     createWindow();
+//   }
+// });
 
 // ipcMain.handle('', async (event, data) => {
 
@@ -433,8 +448,6 @@ ipcMain.on('login:failed', async (event, data) => {
   // });  
   dialog.showErrorBox("Login Failed", data.message)
 });
-
-// window.webContents.send('login:success', data );
 
 // ipcMain.on('login', async (event, { username, password }) => {
 //   // Perform authentication logic here
