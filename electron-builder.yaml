@@ -1,6 +1,5 @@
 # https://www.electron.build/configuration/configuration
 
-# appId: br.laserteck.softeck
 appId: yogie.digital.hallo
 asar: true
 directories:
