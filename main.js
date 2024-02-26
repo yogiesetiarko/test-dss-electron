@@ -1,7 +1,7 @@
 const Realm = require('realm');
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
-const config = require("dotenv");
-config.config();
+// const config = require("dotenv");
+// config.config();
 
 const url = require('url');
 const path = require('path');
@@ -36,7 +36,6 @@ async function loginAtlas() {
 }
 
 async function openRealm() {
-  // const nowUser = getCurrentUser();
   const credentials = Realm.Credentials.anonymous();
   const nowUser = await theapp.logIn(credentials);  
   
@@ -82,10 +81,8 @@ async function openRealm() {
   await realm.subscriptions.update((subs) => {
     const products = realm
       .objects(Products);
-    // console.log("products inside subs", products)
     subs.add(products);
   });
-  // console.log(">>>", realm)
   return realm;
 }
 
