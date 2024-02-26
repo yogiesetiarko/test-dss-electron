@@ -7,8 +7,6 @@ const url = require('url');
 const path = require('path');
 const axios = require('axios');
 const LoginService = require('./services/LoginService');
-// const InitDb = require('./services/InitDb');
-// const isDev = require('electron-is-dev');
 const isPackaged = require('electron-is-packaged').isPackaged;
 const Products = require('./models/Products')
 let theapp = null;
@@ -78,11 +76,7 @@ async function openRealm() {
       //     );
       //   },
       // },
-    },      
-    // path: `${app.getPath('userData')}`
-    // path: `./mongodb-realm/thehello-mghcp/server-utility/metadata/sync_metadata.realm`
-    // path: `${app.getPath('userData')}/mongodb-realm/thehello-mghcp/server-utility/metadata/sync_metadata.realm`
-    // path: `/`
+    },
   }
   realm = await Realm.open(config);
   await realm.subscriptions.update((subs) => {
@@ -177,15 +171,6 @@ function createWindow() {
     protocol: 'file'
   });
 
-  // console.log("process.env.NODE_ENV", process.env.NODE_ENV)
-  // console.log("isPackaged", isPackaged)
-  // console.log("app.getPath('userData')", app.getPath('userData'))
-  // console.log(app.getPath("appData"))
-  // console.log(process.type)
-  // console.log(process.chdir)
-  // console.log(process.cwd())
-  
-
   if(isPackaged) {
     win.loadURL(startUrl);
   } else {
@@ -193,39 +178,21 @@ function createWindow() {
     win.webContents.openDevTools({ mode: 'detach' });
     win.loadURL('http://localhost:5173/');
   }
-  // console.log("process.env.REALM_APP_ID", process.env.REALM_APP_ID)
 
   // Open DevTools if in development mode
   if (process.env.NODE_ENV === 'development') {
-    // win.webContents.openDevTools();
-    // win.webContents.openDevTools({ mode: 'detach' });
+
   }
 
-  // initRealm();
-  // InitDb.initRealm();
-  // win.webContents.send('pushDetails', {'name': 'halo'});
 }
 
 app.whenReady().then( async () => {
-
-  // realm.write(() => {
-  //   realm.create('Dog', {
-  //     _id: 2,
-  //     name: 'Fido',
-  //     age: 5,
-  //   });
-  // });
   
+  // Initialize Realm to connect DB
   makeRealm();
   loginAtlas();
   await openRealm();
-  // process.chdir(`${app.getPath('userData')}/main`);
-  // const products = getProducts();
-  // const products = realm.objects('Products');
-  // console.log("products", products)
-  // const products = realm.objects('Products');
 
-  // ipcMain.handle('dialog:openFile', handleFileOpen)
   createWindow()
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
@@ -255,6 +222,7 @@ app.on('window-all-closed', () => {
 
 // });
 
+// Handle login 
 ipcMain.handle( 'login', async ( event, data ) => {
   let payload = {'username': data.username,'password': data.password}
   let options = {'headers': { 'Content-Type': 'application/json'}}
@@ -262,9 +230,9 @@ ipcMain.handle( 'login', async ( event, data ) => {
   return response
 });
 
+// Handle create new product
 ipcMain.handle('post:newProduct', (event, data) => {
 
-  // await InitDb.addRecord('Products', data.form)
   let result = addRecord(data.form)
   
   return {
@@ -273,11 +241,9 @@ ipcMain.handle('post:newProduct', (event, data) => {
   }
 });
 
+// Handle update product
 ipcMain.handle('put:productById', (event, data) => {
-
-  // await InitDb.addRecord('Products', data.form)
   let result = updateRecord(data.id, data.form)
-  console.log("result", result)
   
   return {
     success: true,
@@ -285,6 +251,7 @@ ipcMain.handle('put:productById', (event, data) => {
   }
 });
 
+// Handle delete product
 ipcMain.handle('del:productById', (event, data) => {
   let result = deleteRecord(data.id)
 
@@ -294,6 +261,7 @@ ipcMain.handle('del:productById', (event, data) => {
   }
 })
 
+// Handle get products
 ipcMain.handle('get:products', async (event, data) => { 
   // const realmApp = new Realm.App({ 
   //   id: 'thehello-mghcp', 
@@ -351,6 +319,7 @@ ipcMain.handle('get:products', async (event, data) => {
   // return products
 });
 
+// Handle get product by id
 ipcMain.handle('get:productById', async (event, data) => {
   // console.log("get:productById main.js")
   // console.log("get:productById data", data)
@@ -386,54 +355,7 @@ ipcMain.handle('get:productById', async (event, data) => {
   }
 });
 
-// ipcMain.handle('get:products', (event, data) => {
-//   // console.log("get:products main.js")
-//   // let result = InitDb.getRecords('Products', {'aha':'halo'});
-//   // console.log("result", result)
-
-//   const realmApp = new Realm.App({ id: 'thehello-mghcp' }); // create a new instance of the Realm.App
-//   const credentials = Realm.Credentials.anonymous();
-//   const user = realmApp.logIn(credentials);
-//   // const config = {
-//   //   schema: [Products],
-//   //   sync: {
-//   //     user: user,
-//   //     flexible: true,
-//   //     initialSubscriptions: {
-//   //       update: (subs, realm) => {
-//   //         subs.add(
-//   //           realm
-//   //             // Use the mapped name in Flexible Sync subscriptions.
-//   //             .objects(`Products`)
-//   //             // .filtered('name == "Dedo"')
-//   //         );
-//   //       },
-//   //     },
-//   //   },      
-//   // }
-
-//   // const realm = Realm.open(config);
-//   // const products = realm.objects('Products');
-//   // console.log("products", products)  
-
-//   return {
-//     success: true,
-//     message: 'success',
-//     data: []
-//   }
-// });
-
-// ipcMain.handle('get:products', async (event, data) => { 
-//   // return InitDb.getRecords('Products', data); 
-//   return await InitDb.getRecords('Products', data).then(() => { return result; })
-// });
-
-// ipcMain.handle('get:products', async (event, data) => { 
-//   // return InitDb.getRecords('Products', data); 
-//   // return await InitDb.getRecords('Products', data).then(() => { return result; })
-//   return []
-// });
-
+// Handle when login failed, it shows dialog from Electron
 ipcMain.on('login:failed', async (event, data) => {
   // Open a simple message box
   // dialog.showMessageBox({
