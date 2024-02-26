@@ -33,7 +33,7 @@
 2. maka akan muncul folder app di dalam project electron
 3. npm run electron:build dan tunggu proses build hingga selesai
 4. npm run electron:build => ini akan menghasilkan folder release, jika di laptop saya macbook pro akan menghasilkan file installer dmg di dalam folder release,
-dan juga menghasilkan file yang bernama "test-dss-electron" di dalam /Users/yogiedigital/Downloads/dss/test-dss-electron/release/1.0.0/mac/test-dss-electron,
+dan juga menghasilkan file yang bernama "test-dss-electron" di dalam ..envfolderlaptop/dss/test-dss-electron/release/1.0.0/mac/test-dss-electron,
 ini adalah portable file yang bisa digunakan
 
 ## Technical helper
